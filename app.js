@@ -9,6 +9,7 @@ const logger = require('koa-logger')
 const index = require('./routes/index')
 const users = require('./routes/users')
 const customer = require('./routes/customer')
+const { proving } = require('./module/token')
 
 require('./sql/db.js')
 
@@ -30,7 +31,30 @@ app.use(views(__dirname + '/views', {
 // logger
 app.use(async (ctx, next) => {
   const start = new Date()
-  await next()
+
+
+  if (ctx.url !== '/user/login') {
+    let token = ctx.request.header.authorization;
+    if (token){
+      //  获取到token
+      let res = proving(token);
+      if (res && res.exp <= new Date()/1000){
+        ctx.body = {
+          message: 'token过期',
+          code: 2
+        };
+      } else {
+        await next()
+      }
+    } else{  // 没有取到token
+      ctx.body = {
+        msg: '没有token',
+        code: 2
+      }
+    }
+  } else {
+    await next()
+  }
   const ms = new Date() - start
   console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })

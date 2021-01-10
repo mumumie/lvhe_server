@@ -1,5 +1,6 @@
 const router = require('koa-router')()
 const mongoose = require('mongoose');
+const { addtoken, proving } = require('../module/token');
 
 // 找到用户集合
 const User = require('../sql/collection/users')
@@ -14,8 +15,10 @@ router.post('/login', async (ctx, next) => {
   const data = await sql.findOne(User, {username})
   if (data) {
     if (data.password === password) {
+      let tk = addtoken({user: data.username, id: data._id})
       ctx.body = {
         msg: '登录成功',
+        token: tk,
         userinfo: data,
         retCode: 0
       }
@@ -31,7 +34,6 @@ router.post('/login', async (ctx, next) => {
       retCode: 1
     }
   }
-
 })
 
 // 获取用户信息
@@ -51,6 +53,14 @@ router.get('/info', async (ctx, next) => {
     }
   }
 
+})
+
+// 退出
+router.post('/logout', async (ctx, next) => {
+  ctx.body = {
+    msg: '退出登录',
+    retCode: 0
+  }
 })
 
 // 列表查询

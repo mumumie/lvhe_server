@@ -8,6 +8,21 @@ const sql = require('../sql/index')
 
 router.prefix('/customer')
 
+const discount = (val) => {
+  switch (val) {
+    case 0:
+      return 0.9
+    case 1:
+      return 0.75
+    case 2:
+      return 0.5
+    case 3:
+      return 0.3
+    default:
+      return 1
+  }
+}
+
 // 列表查询
 router.post('/list', async (ctx, next) => {
   const {condition: {nickname, tel}, showObj, pageSize, page, sort} = ctx.request.body
@@ -67,6 +82,24 @@ router.post('/delete', async (ctx, next) => {
   const _id = mongoose.Types.ObjectId(id)
   const data = await sql.update(Customer, { _id }, {updateAt: new Date().getTime(), flag: 0})
   ctx.body = data
+})
+
+// 扣款
+router.post('/consume', async (ctx, next) => {
+  const { sum, consume, vip_level, _id } = ctx.request.body
+  const id = mongoose.Types.ObjectId(_id);
+  const money = sum - consume * discount(vip_level)
+  const data = await sql.update(Customer, { _id: id }, {updateAt: new Date().getTime(), sum: money})
+  ctx.body = { ...data, sum: money }
+})
+
+// 充值
+router.post('/recharge', async (ctx, next) => {
+  const { sum, consume, vip_level, _id } = ctx.request.body
+  const id = mongoose.Types.ObjectId(_id);
+  const money = Number(sum) + Number(consume)
+  const data = await sql.update(Customer, { _id: id }, {updateAt: new Date().getTime(), sum: money, vip_level})
+  ctx.body = { ...data, sum: money }
 })
 
 

@@ -10,8 +10,20 @@ router.prefix('/logs')
 
 // 列表查询
 router.post('/list', async (ctx, next) => {
-  const {condition: {username}, showObj, pageSize, page, sort} = ctx.request.body
-  const data = await sql.paging(Logs, {username: {$regex: username}}, null, pageSize, page, sort)
+  const {condition, showObj, pageSize, page, sort} = ctx.request.body
+  const data = await Logs.aggregate([
+    {
+      $match: condition,
+      $lookup:
+        {
+          from: "users",
+          localField: "userid",
+          foreignField: "_id",
+          as: "userinfo"
+        }
+    }
+  ])
+
   if (data) {
     ctx.body = {
       ...data,

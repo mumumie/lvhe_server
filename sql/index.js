@@ -2,9 +2,12 @@ module.exports = {
   // 数据库集合靠函数去传递
   insert (CollectionName, insertData) {
     return new Promise((resolve, reject) => {
-      CollectionName.insertMany(insertData, (err) => {
+      CollectionName.insertMany(insertData, (err, data) => {
         if (err)  reject({retCode: 1, msg: JSON.stringify(err)});
-        resolve({ retCode: 0 })
+        resolve({
+          data,
+          retCode: 0
+        })
       })
     })
   },

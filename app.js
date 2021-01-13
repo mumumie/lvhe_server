@@ -9,6 +9,7 @@ const logger = require('koa-logger')
 const index = require('./routes/index')
 const users = require('./routes/users')
 const customer = require('./routes/customer')
+const logs = require('./routes/logs')
 const { proving } = require('./module/token')
 
 require('./sql/db.js')
@@ -63,6 +64,7 @@ app.use(async (ctx, next) => {
 app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())
 app.use(customer.routes(), customer.allowedMethods())
+app.use(logs.routes(), logs.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {

@@ -10,23 +10,43 @@ router.prefix('/logs')
 
 // 列表查询
 router.post('/list', async (ctx, next) => {
-  const {condition, showObj, pageSize, page, sort} = ctx.request.body
+  const { condition, showObj, pageSize, page, sort } = ctx.request.body
   const data = await Logs.aggregate([
+    // {
+    //   $group:{
+    //     _id: null,
+    //     list:{
+    //       $push:"$$ROOT"
+    //     },
+    //     total: {$sum: 1}
+    //   }
+    // },
     {
-      $match: condition,
-      $lookup:
-        {
-          from: "users",
-          localField: "userid",
-          foreignField: "_id",
-          as: "userinfo"
-        }
+      $lookup: {
+        from: "users",
+        localField: "user_id",
+        foreignField: "_id",
+        as: "user_info"
+      }
+    },
+    {
+      $lookup: {
+        from: "customers",
+        localField: "customer_id",
+        foreignField: "_id",
+        as: "customer_info"
+      }
+    },
+    {
+      $skip: page - 1
+    },
+    {
+      $limit: pageSize
     }
   ])
-
   if (data) {
     ctx.body = {
-      ...data,
+      list: data,
       retCode: 0
     }
   } else {

@@ -57,11 +57,10 @@ router.post('/add', async (ctx, next) => {
     }
     return
   }
-  console.log(params);
   const result = await sql.insert(Customer, {customer_id: `LH${parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}`,...params})
   if (result.retCode === 0) {
     const logParams = {
-      customer_id: result.data._id,
+      customer_id: result.data[0]._id,
       user_id: params.userid,
       type: 1,
       vip_level: params.vip_level,
@@ -69,8 +68,9 @@ router.post('/add', async (ctx, next) => {
       recharge_sum: params.sum
     }
     await sql.insert(Logs, logParams)
+    console.log(logParams);
   }
-  console.log(result);
+
   ctx.body = result
 })
 

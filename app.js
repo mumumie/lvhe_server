@@ -38,11 +38,16 @@ app.use(async (ctx, next) => {
     let token = ctx.request.header.authorization;
     if (token){
       //  获取到token
-      let res = proving(token);
-      if (res && res.exp <= new Date()/1000){
+      let res = proving(token)
+      if (!res) {
         ctx.body = {
-          message: 'token过期',
-          code: 2
+          msg: 'token失效',
+          retCode: 2
+        };
+      } else if (res && res.exp <= new Date()/1000) {
+        ctx.body = {
+          msg: 'token过期',
+          retCode: 2
         };
       } else {
         await next()
@@ -50,7 +55,7 @@ app.use(async (ctx, next) => {
     } else{  // 没有取到token
       ctx.body = {
         msg: '没有token',
-        code: 2
+        retCode: 2
       }
     }
   } else {

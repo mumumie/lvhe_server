@@ -60,7 +60,7 @@ router.post('/add', async (ctx, next) => {
   const result = await sql.insert(Customer, {customer_id: `LH${parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}`,...params})
   if (result.retCode === 0) {
     const logParams = {
-      customer_id: result.data[0]._id,
+      customer_id: result.data[0].customer_id,
       user_id: params.userid,
       type: 1,
       vip_level: params.vip_level,
@@ -68,7 +68,6 @@ router.post('/add', async (ctx, next) => {
       recharge_sum: params.sum
     }
     await sql.insert(Logs, logParams)
-    console.log(logParams);
   }
 
   ctx.body = result
@@ -101,20 +100,47 @@ router.post('/delete', async (ctx, next) => {
 
 // 扣款
 router.post('/consume', async (ctx, next) => {
-  const { sum, consume, vip_level, _id } = ctx.request.body
+  const { userid, sum, consume, vip_level, _id, customer_id } = ctx.request.body
   const id = mongoose.Types.ObjectId(_id);
-  const money = sum - consume * discount(vip_level)
-  const data = await sql.update(Customer, { _id: id }, {updateAt: new Date().getTime(), sum: money})
-  ctx.body = { ...data, sum: money }
+  console.log(sum);
+  console.log(Number((consume * discount(vip_level)).toFixed(2)));
+  const money = sum - Number((consume * discount(vip_level)).toFixed(2))
+  console.log(money);
+  const result = await sql.update(Customer, { _id: id }, {updateAt: new Date().getTime(), sum: money})
+
+  if (result.retCode === 0) {
+    const logParams = {
+      customer_id: customer_id,
+      user_id: userid,
+      type: 2,
+      vip_level: vip_level,
+      sum: money,
+      consume_sum: Number((consume * discount(vip_level)).toFixed(2))
+    }
+    await sql.insert(Logs, logParams)
+  }
+  ctx.body = { ...result, sum: money }
 })
 
 // 充值
 router.post('/recharge', async (ctx, next) => {
-  const { sum, consume, vip_level, _id } = ctx.request.body
+  const { userid, sum, consume, vip_level, _id, customer_id } = ctx.request.body
   const id = mongoose.Types.ObjectId(_id);
   const money = Number(sum) + Number(consume)
-  const data = await sql.update(Customer, { _id: id }, {updateAt: new Date().getTime(), sum: money, vip_level})
-  ctx.body = { ...data, sum: money }
+  const result = await sql.update(Customer, { _id: id }, {updateAt: new Date().getTime(), sum: money, vip_level})
+
+  if (result.retCode === 0) {
+    const logParams = {
+      customer_id: customer_id,
+      user_id: userid,
+      type: 3,
+      vip_level: vip_level,
+      sum: money,
+      recharge_sum: Number(consume)
+    }
+    await sql.insert(Logs, logParams)
+  }
+  ctx.body = { ...result, sum: money }
 })
 
 

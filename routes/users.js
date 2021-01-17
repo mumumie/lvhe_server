@@ -126,7 +126,7 @@ router.post('/edit', async (ctx, next) => {
     return
   }
 
-  const data = await sql.update(User, { _id: _id }, {updateAt: new Date().getTime(), ...params})
+  const data = await sql.update(User, { _id: _id }, {update_at: new Date().getTime(), ...params})
   ctx.body = data
 })
 

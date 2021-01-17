@@ -40,11 +40,15 @@ const logSchema = new Schema({ // 设计用户集合的字段以及数据类型
     type: Number,
     default: 1
   },
-  createAt: {
+  insert_date: {
+    type: Date,
+    default: Date.now
+  },
+  create_at: {
     type: Number,
     default: new Date().getTime()
   },
-  updateAt: {
+  update_at: {
     type: Number,
     default: new Date().getTime()
   }
@@ -53,10 +57,10 @@ const logSchema = new Schema({ // 设计用户集合的字段以及数据类型
 // Defines a pre hook for the document.
 logSchema.pre('save', function(next) {
   if (this.isNew) {
-    this.createAt = this.updateAt = new Date().getTime()
+    this.create_at = this.update_at = new Date().getTime()
   }
   else {
-    this.updateAt = new Date().getTime()
+    this.update_at = new Date().getTime()
   }
   next()
 })

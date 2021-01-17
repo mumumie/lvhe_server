@@ -44,7 +44,6 @@ router.post('/list', async (ctx, next) => {
   }
 })
 
-
 // 新增
 router.post('/add', async (ctx, next) => {
   const params = ctx.request.body
@@ -86,7 +85,7 @@ router.post('/edit', async (ctx, next) => {
     return
   }
 
-  const data = await sql.update(Customer, { _id: _id }, {updateAt: new Date().getTime(), ...params})
+  const data = await sql.update(Customer, { _id: _id }, {update_at: new Date().getTime(), ...params})
   ctx.body = data
 })
 
@@ -94,19 +93,16 @@ router.post('/edit', async (ctx, next) => {
 router.post('/delete', async (ctx, next) => {
   const { id } = ctx.request.body
   const _id = mongoose.Types.ObjectId(id)
-  const data = await sql.update(Customer, { _id }, {updateAt: new Date().getTime(), flag: 0})
+  const data = await sql.update(Customer, { _id }, {update_at: new Date().getTime(), flag: 0})
   ctx.body = data
 })
 
 // 扣款
 router.post('/consume', async (ctx, next) => {
   const { userid, sum, consume, vip_level, _id, customer_id } = ctx.request.body
-  const id = mongoose.Types.ObjectId(_id);
-  console.log(sum);
-  console.log(Number((consume * discount(vip_level)).toFixed(2)));
+  const id = mongoose.Types.ObjectId(_id)
   const money = sum - Number((consume * discount(vip_level)).toFixed(2))
-  console.log(money);
-  const result = await sql.update(Customer, { _id: id }, {updateAt: new Date().getTime(), sum: money})
+  const result = await sql.update(Customer, { _id: id }, {update_at: new Date().getTime(), sum: money})
 
   if (result.retCode === 0) {
     const logParams = {
@@ -127,7 +123,7 @@ router.post('/recharge', async (ctx, next) => {
   const { userid, sum, consume, vip_level, _id, customer_id } = ctx.request.body
   const id = mongoose.Types.ObjectId(_id);
   const money = Number(sum) + Number(consume)
-  const result = await sql.update(Customer, { _id: id }, {updateAt: new Date().getTime(), sum: money, vip_level})
+  const result = await sql.update(Customer, { _id: id }, {update_at: new Date().getTime(), sum: money, vip_level})
 
   if (result.retCode === 0) {
     const logParams = {
@@ -143,5 +139,17 @@ router.post('/recharge', async (ctx, next) => {
   ctx.body = { ...result, sum: money }
 })
 
+// 散户消费
+router.post('/consumeGeneral', async (ctx, next) => {
+  const { userid, consume } = ctx.request.body
+  const logParams = {
+    customer_id: '-',
+    user_id: userid,
+    type: 4,
+    consume_sum: consume
+  }
+  const result = await sql.insert(Logs, logParams)
+  ctx.body = { ...result }
+})
 
 module.exports = router

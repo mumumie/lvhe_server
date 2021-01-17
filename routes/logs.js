@@ -28,32 +28,20 @@ router.post('/list', async (ctx, next) => {
         as: "customer_info"
       }
     },
-    {
-      $group: {
-        _id: null,
-        list: {
-          $push:"$$ROOT"
-        },
-        total: {$sum: 1}
-      }
-    },
-    {
-      $skip: page - 1
-    },
-    {
-      $limit: pageSize
-    }
+    { $skip: page - 1 },
+    { $limit: pageSize }
   ]
+  let whereObj = {}
   if (condition) {
-    params.unshift({
-      $match: condition
-    })
+    params.unshift({ $match: condition })
+    whereObj = condition
   }
-
+  const totalNum = await Logs.find(whereObj, {}).countDocuments()
   const data = await Logs.aggregate(params)
   if (data) {
     ctx.body = {
-      ...data[0],
+      list: data,
+      total: totalNum,
       retCode: 0
     }
   } else {
@@ -61,6 +49,44 @@ router.post('/list', async (ctx, next) => {
       msg: '暂无数据',
       retCode: 1
     }
+  }
+})
+
+// 查询月新增人数
+router.post('/monthCustomer', async (ctx, next) => {
+  const { type, date } = ctx.request.body
+  const params = [
+    {
+      $match: {
+        "type": type
+      }
+    },
+    {
+      $project : {
+        day : { $substr: [{"$add":["$insert_date", 28800000]}, 0, 10] },//时区数据校准，8小时换算成毫秒数为8*60*60*1000=288000后分割成YYYY-MM-DD日期格式便于分组
+        "recharge_sum": 1 //设置原有price字段可用，用于计算总价
+      },
+    },
+    {
+      $group: {
+        _id: "$day", //将_id设置为day数据
+        totalPrice:{ $sum: "$recharge_sum"}, //统计price
+      }
+    },
+    {
+      $sort: { _id: 1 }//根据date排序
+    }
+  ]
+  if (date && typeof date === 'object') {
+    params[0].$match.create_at = {
+      $gte: date[0],
+      $lte: date[1]
+    }
+  }
+  const result = await Logs.aggregate(params)
+  ctx.body = {
+    list: result,
+    retCode: 0
   }
 })
 

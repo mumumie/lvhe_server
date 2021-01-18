@@ -3,45 +3,45 @@ const mongoose = require('mongoose')
 
 // 找到用户集合
 const Logs = require('../sql/collection/logs')
+const User = require('../sql/collection/users')
+const Customer = require('../sql/collection/customer')
 // 找到数据库封装文件
 const sql = require('../sql/index')
 
 router.prefix('/logs')
 
+const getInfo = async (collectionName, row, prop) => {
+  if (row[prop]) {
+    const info = await collectionName.findOne({[prop]: row[prop]})
+    return info
+  } else {
+    return null
+  }
+}
+
 // 列表查询
 router.post('/list', async (ctx, next) => {
   const { condition, showObj, pageSize, page, sort } = ctx.request.body
-  const params = [
-    {
-      $lookup: {
-        from: "users",
-        localField: "user_id",
-        foreignField: "user_id",
-        as: "user_info"
-      }
-    },
-    {
-      $lookup: {
-        from: "customers",
-        localField: "customer_id",
-        foreignField: "customer_id",
-        as: "customer_info"
-      }
-    },
-    { $skip: page - 1 },
-    { $limit: pageSize }
-  ]
   let whereObj = {}
   if (condition) {
-    params.unshift({ $match: condition })
     whereObj = condition
   }
-  const totalNum = await Logs.find(whereObj, {}).countDocuments()
-  const data = await Logs.aggregate(params)
+  const data = await sql.paging(Logs, whereObj, null, pageSize, page, sort)
+  const list = data.list.map(async v => {
+    const user_info = await getInfo(User, v, 'user_id')
+    const customer_info = await getInfo(Customer, v, 'customer_id')
+    const obj = await v
+    return {
+      obj,
+      user_info,
+      customer_info
+    }
+  })
+  const result = await Promise.all(list)
   if (data) {
     ctx.body = {
-      list: data,
-      total: totalNum,
+      list: result,
+      totalNum: data.totalNum,
       retCode: 0
     }
   } else {
@@ -94,7 +94,7 @@ router.post('/monthCustomer', async (ctx, next) => {
 router.post('/delete', async (ctx, next) => {
   const { id } = ctx.request.body
   const _id = mongoose.Types.ObjectId(id)
-  const data = await sql.update(User, { _id }, {updateAt: new Date().getTime(), flag: 0})
+  const data = await sql.update(Logs, { _id }, {updateAt: new Date().getTime(), flag: 0})
   ctx.body = data
 })
 

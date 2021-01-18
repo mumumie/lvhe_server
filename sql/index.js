@@ -63,7 +63,7 @@ module.exports = {
     })
   },
   // 分页查询操作
-  paging (CollectionName, whereObj, showObj, pageSize, page, sort = {createAt: -1}) {
+  paging (CollectionName, whereObj, showObj, pageSize, page, sort = {create_at: -1}) {
     return new Promise(async (resolve, reject) => {
       // limit(pageSize) 每页显示个数
       // skip(page * pageSize) // 每页从哪一个开始

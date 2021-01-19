@@ -52,7 +52,6 @@ router.get('/info', async (ctx, next) => {
       retCode: 404
     }
   }
-
 })
 
 // 退出
@@ -101,7 +100,6 @@ router.post('/add', async (ctx, next) => {
     return
   }
   const data = await sql.insert(User, params)
-  console.log(data);
   ctx.body = data
 })
 

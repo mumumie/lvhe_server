@@ -68,8 +68,24 @@ router.post('/add', async (ctx, next) => {
     }
     await sql.insert(Logs, logParams)
   }
-
   ctx.body = result
+})
+
+// 获取会员信息
+router.post('/info', async (ctx, next) => {
+  const _id = mongoose.Types.ObjectId(ctx.request.body._id)
+  const data = await sql.findOne(Customer, {_id})
+  if (data) {
+    ctx.body = {
+      userinfo: data,
+      retCode: 0
+    }
+  } else {
+    ctx.body = {
+      msg: '获取失效',
+      retCode: 404
+    }
+  }
 })
 
 // 修改

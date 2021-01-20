@@ -117,7 +117,9 @@ router.post('/delete', async (ctx, next) => {
 router.post('/consume', async (ctx, next) => {
   const { userid, sum, consume, vip_level, _id, customer_id } = ctx.request.body
   const id = mongoose.Types.ObjectId(_id)
-  const money = sum - Number((consume * discount(vip_level)).toFixed(2))
+  console.log(Number((consume * discount(vip_level)).toFixed(2)));
+  const money = (sum - Number((consume * discount(vip_level)).toFixed(2))).toFixed(2)
+  console.log(money);
   const result = await sql.update(Customer, { _id: id }, {update_at: new Date().getTime(), sum: money})
 
   if (result.retCode === 0) {

@@ -52,9 +52,9 @@ router.post('/list', async (ctx, next) => {
   }
 })
 
-// 查询月新增人数
+// 查询月消费充值数据
 router.post('/monthCustomer', async (ctx, next) => {
-  const { type, date } = ctx.request.body
+  const { type, date, field } = ctx.request.body
   const params = [
     {
       $match: {
@@ -64,13 +64,51 @@ router.post('/monthCustomer', async (ctx, next) => {
     {
       $project : {
         day : { $substr: [{"$add":["$insert_date", 28800000]}, 0, 10] },//时区数据校准，8小时换算成毫秒数为8*60*60*1000=288000后分割成YYYY-MM-DD日期格式便于分组
-        "recharge_sum": 1 //设置原有price字段可用，用于计算总价
+        [field]: 1 //设置原有price字段可用，用于计算总价
       },
     },
     {
       $group: {
         _id: "$day", //将_id设置为day数据
-        totalPrice:{ $sum: "$recharge_sum"}, //统计price
+        totalPrice:{ $sum: `$${field}`}, //统计price
+      }
+    },
+    {
+      $sort: { _id: 1 }//根据date排序
+    }
+  ]
+  if (date && typeof date === 'object') {
+    params[0].$match.create_at = {
+      $gte: date[0],
+      $lte: date[1]
+    }
+  }
+  const result = await Logs.aggregate(params)
+  ctx.body = {
+    list: result,
+    retCode: 0
+  }
+})
+
+// 查询月消费充值数据
+router.post('/monthConsumeTotal', async (ctx, next) => {
+  const { date } = ctx.request.body
+  const params = [
+    {
+      $match: {}
+    },
+    {
+      $project : {
+        "type": 1,
+        "recharge_sum": 1,
+        "consume_sum": 1
+      },
+    },
+    {
+      $group: {
+        _id: "$type", // 将_id设置为day数据
+        rechargeTotal:{ $sum: "$recharge_sum" },
+        consumeTotal:{ $sum: "$consume_sum" }
       }
     },
     {

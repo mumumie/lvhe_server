@@ -1,8 +1,9 @@
 module.exports = {
   // 数据库集合靠函数去传递
   insert (CollectionName, insertData) {
+    const date = new Date().getTime()
     return new Promise((resolve, reject) => {
-      CollectionName.insertMany(insertData, (err, data) => {
+      CollectionName.insertMany({ ...insertData, create_at: date, update_at: date }, (err, data) => {
         if (err)  reject({retCode: 1, msg: JSON.stringify(err)});
         resolve({
           data,
@@ -31,9 +32,10 @@ module.exports = {
   },
   // 更新操作封装
   update (CollectionName, whereObj, updateObj, updateType) {
+    const date = new Date().getTime()
     updateType = updateType || 'updateOne'
     return new Promise((resolve, reject) => {
-      CollectionName[updateType](whereObj, updateObj, (err) => {
+      CollectionName[updateType]({ ...whereObj, update_at: date}, updateObj, (err) => {
         if (err) reject({retCode: 1, msg: JSON.stringify(err)});
         resolve({ retCode: 0 })
       })

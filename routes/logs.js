@@ -63,7 +63,7 @@ router.post('/monthCustomer', async (ctx, next) => {
     },
     {
       $project : {
-        day : { $substr: [{"$add":["$insert_date", 28800000]}, 0, 10] },//时区数据校准，8小时换算成毫秒数为8*60*60*1000=288000后分割成YYYY-MM-DD日期格式便于分组
+        day : { $substr: [{"$add":["$insert_date", 28800000]}, 0, 10] }, //时区数据校准，8小时换算成毫秒数为8*60*60*1000=288000后分割成YYYY-MM-DD日期格式便于分组
         [field]: 1 //设置原有price字段可用，用于计算总价
       },
     },

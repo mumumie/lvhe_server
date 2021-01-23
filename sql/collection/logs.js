@@ -7,15 +7,27 @@ const logSchema = new Schema({ // 设计用户集合的字段以及数据类型
   customer_id: {
     type: String,
     require: true
-  },
+  }, // 会员
   user_id: {
     type: String,
     require: true
+  }, // 销售人员
+  operator_id: {
+    type: String,
+    require: true
+  }, // 操作人员
+  operator_dpt: {
+    type: String,
+    require: true
   },
+  account_type: {
+    type: Number,
+    require: true
+  }, // 账单类型  1: 消费 2: 充值
   type: {
     type: Number,
     require: true
-  }, // 1: 新增 2: 消费 3: 充值
+  }, // 1: 新增 2: 消费 3: 充值 4:散户消费
   vip_level: {
     type: Number,
     require: true

@@ -49,9 +49,9 @@ module.exports = {
     })
   },
   // 查询单个
-  findOne (CollectionName, whereObj) {
+  findOne (CollectionName, whereObj, showObj) {
     return new Promise((resolve, reject) => {
-      CollectionName.findOne(whereObj).exec((err, data) => {
+      CollectionName.findOne(whereObj, showObj).exec((err, data) => {
         if (err) {
           reject({retCode: 1, msg: JSON.stringify(err)})
         } else {

@@ -64,8 +64,8 @@ router.post('/logout', async (ctx, next) => {
 
 // 列表查询
 router.post('/list', async (ctx, next) => {
-  const {condition: {username}, showObj, pageSize, page, sort} = ctx.request.body
-  const data = await sql.paging(User, {username: {$regex: username}}, null, pageSize, page, sort)
+  const {condition, showObj, pageSize, page, sort} = ctx.request.body
+  const data = await sql.paging(User, condition, showObj, pageSize, page, sort)
   if (data) {
     ctx.body = {
       ...data,

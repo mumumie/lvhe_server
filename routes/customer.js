@@ -64,7 +64,10 @@ router.post('/add', async (ctx, next) => {
       type: 1,
       vip_level: params.vip_level,
       sum: params.sum,
-      recharge_sum: params.sum
+      recharge_sum: params.sum,
+      operator_id: params.operator_id,
+      account_type: 2,
+      operator_dpt: params.operator_dpt
     }
     await sql.insert(Logs, logParams)
   }
@@ -115,11 +118,9 @@ router.post('/delete', async (ctx, next) => {
 
 // 扣款
 router.post('/consume', async (ctx, next) => {
-  const { userid, sum, consume, vip_level, _id, customer_id } = ctx.request.body
+  const { userid, sum, consume, vip_level, _id, customer_id, operator_id, operator_dpt } = ctx.request.body
   const id = mongoose.Types.ObjectId(_id)
-  console.log(Number((consume * discount(vip_level)).toFixed(2)));
   const money = (sum - Number((consume * discount(vip_level)).toFixed(2))).toFixed(2)
-  console.log(money);
   const result = await sql.update(Customer, { _id: id }, {update_at: new Date().getTime(), sum: money})
 
   if (result.retCode === 0) {
@@ -129,7 +130,10 @@ router.post('/consume', async (ctx, next) => {
       type: 2,
       vip_level: vip_level,
       sum: money,
-      consume_sum: Number((consume * discount(vip_level)).toFixed(2))
+      consume_sum: Number((consume * discount(vip_level)).toFixed(2)),
+      operator_id,
+      account_type: 1,
+      operator_dpt
     }
     await sql.insert(Logs, logParams)
   }
@@ -138,7 +142,7 @@ router.post('/consume', async (ctx, next) => {
 
 // 充值
 router.post('/recharge', async (ctx, next) => {
-  const { userid, sum, consume, vip_level, _id, customer_id } = ctx.request.body
+  const { userid, sum, consume, vip_level, _id, customer_id, operator_id, operator_dpt } = ctx.request.body
   const id = mongoose.Types.ObjectId(_id);
   const money = Number(sum) + Number(consume)
   const result = await sql.update(Customer, { _id: id }, {update_at: new Date().getTime(), sum: money, vip_level})
@@ -150,7 +154,10 @@ router.post('/recharge', async (ctx, next) => {
       type: 3,
       vip_level: vip_level,
       sum: money,
-      recharge_sum: Number(consume)
+      recharge_sum: Number(consume),
+      operator_id,
+      account_type: 2,
+      operator_dpt
     }
     await sql.insert(Logs, logParams)
   }
@@ -159,12 +166,15 @@ router.post('/recharge', async (ctx, next) => {
 
 // 散户消费
 router.post('/consumeGeneral', async (ctx, next) => {
-  const { userid, consume } = ctx.request.body
+  const { userid, consume, operator_id, operator_dpt } = ctx.request.body
   const logParams = {
     customer_id: '-',
     user_id: userid,
     type: 4,
-    consume_sum: consume
+    consume_sum: consume,
+    operator_id,
+    account_type: 1,
+    operator_dpt
   }
   const result = await sql.insert(Logs, logParams)
   ctx.body = { ...result }

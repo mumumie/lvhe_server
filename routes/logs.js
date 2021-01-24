@@ -54,11 +54,16 @@ router.post('/list', async (ctx, next) => {
 
 // 查询月消费充值数据
 router.post('/monthCustomer', async (ctx, next) => {
-  const { type, date, field } = ctx.request.body
+  const { type, date, field, operator_dpt } = ctx.request.body
   const params = [
     {
       $match: {
-        "type": type
+        create_at: {
+          $gte: date[0],
+          $lte: date[1],
+        },
+        type,
+        operator_dpt
       }
     },
     {
@@ -77,12 +82,6 @@ router.post('/monthCustomer', async (ctx, next) => {
       $sort: { _id: 1 }//根据date排序
     }
   ]
-  if (date && typeof date === 'object') {
-    params[0].$match.create_at = {
-      $gte: date[0],
-      $lte: date[1]
-    }
-  }
   const result = await Logs.aggregate(params)
   ctx.body = {
     list: result,
@@ -92,10 +91,16 @@ router.post('/monthCustomer', async (ctx, next) => {
 
 // 查询月消费充值数据
 router.post('/monthConsumeTotal', async (ctx, next) => {
-  const { date } = ctx.request.body
+  const { date, operator_dpt } = ctx.request.body
   const params = [
     {
-      $match: {}
+      $match: {
+        create_at: {
+          $gte: date[0],
+          $lte: date[1],
+        },
+        operator_dpt
+      }
     },
     {
       $project : {
@@ -115,12 +120,6 @@ router.post('/monthConsumeTotal', async (ctx, next) => {
       $sort: { _id: 1 }//根据date排序
     }
   ]
-  if (date && typeof date === 'object') {
-    params[0].$match.create_at = {
-      $gte: date[0],
-      $lte: date[1]
-    }
-  }
   const result = await Logs.aggregate(params)
   ctx.body = {
     list: result,

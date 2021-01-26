@@ -2,8 +2,8 @@
 const mongoose = require('mongoose');
 mongoose.set("useCreateIndex", true);
 // 1908shop 是表示数据库的名称
-// const DB_URL = 'mongodb://admin:123456@47.97.66.209:27017/lvhe';
-const DB_URL = 'mongodb://admin:123456@47.97.66.209:27017/book';
+const DB_URL = 'mongodb://admin:123456@47.97.66.209:27017/lvhe';
+// const DB_URL = 'mongodb://admin:123456@47.97.66.209:27017/book';
 
 mongoose.connect(DB_URL, {
   authSource: 'admin',

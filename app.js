@@ -32,8 +32,6 @@ app.use(views(__dirname + '/views', {
 // logger
 app.use(async (ctx, next) => {
   const start = new Date()
-
-
   if (ctx.url !== '/user/login') {
     let token = ctx.request.header.authorization;
     if (token){
@@ -61,6 +59,7 @@ app.use(async (ctx, next) => {
   } else {
     await next()
   }
+  // await next()
   const ms = new Date() - start
   console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
